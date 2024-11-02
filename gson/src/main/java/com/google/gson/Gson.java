@@ -158,6 +158,7 @@ public final class Gson {
   static final boolean DEFAULT_SERIALIZE_NULLS = false;
   static final boolean DEFAULT_COMPLEX_MAP_KEYS = false;
   static final boolean DEFAULT_SPECIALIZE_FLOAT_VALUES = false;
+  static final boolean DEFAULT_DISALLOW_DUPLICATE_PROPERTIES = true;
   static final boolean DEFAULT_USE_JDK_UNSAFE = true;
   static final String DEFAULT_DATE_PATTERN = null;
   static final FieldNamingStrategy DEFAULT_FIELD_NAMING_STRATEGY = FieldNamingPolicy.IDENTITY;
@@ -195,6 +196,7 @@ public final class Gson {
   final Map<Type, InstanceCreator<?>> instanceCreators;
   final boolean serializeNulls;
   final boolean complexMapKeySerialization;
+  final boolean disallowDuplicateProperties;
   final boolean generateNonExecutableJson;
   final boolean htmlSafe;
   final FormattingStyle formattingStyle;
@@ -257,6 +259,7 @@ public final class Gson {
         Collections.<Type, InstanceCreator<?>>emptyMap(),
         DEFAULT_SERIALIZE_NULLS,
         DEFAULT_COMPLEX_MAP_KEYS,
+        DEFAULT_DISALLOW_DUPLICATE_PROPERTIES,
         DEFAULT_JSON_NON_EXECUTABLE,
         DEFAULT_ESCAPE_HTML,
         DEFAULT_FORMATTING_STYLE,
@@ -281,6 +284,7 @@ public final class Gson {
       Map<Type, InstanceCreator<?>> instanceCreators,
       boolean serializeNulls,
       boolean complexMapKeySerialization,
+      boolean disallowDuplicateProperties,
       boolean generateNonExecutableGson,
       boolean htmlSafe,
       FormattingStyle formattingStyle,
@@ -304,6 +308,7 @@ public final class Gson {
         new ConstructorConstructor(instanceCreators, useJdkUnsafe, reflectionFilters);
     this.serializeNulls = serializeNulls;
     this.complexMapKeySerialization = complexMapKeySerialization;
+    this.disallowDuplicateProperties = disallowDuplicateProperties;
     this.generateNonExecutableJson = generateNonExecutableGson;
     this.htmlSafe = htmlSafe;
     this.formattingStyle = formattingStyle;
@@ -383,7 +388,9 @@ public final class Gson {
 
     // type adapters for composite and user-defined types
     factories.add(new CollectionTypeAdapterFactory(constructorConstructor));
-    factories.add(new MapTypeAdapterFactory(constructorConstructor, complexMapKeySerialization));
+    factories.add(
+        new MapTypeAdapterFactory(
+            constructorConstructor, complexMapKeySerialization, disallowDuplicateProperties));
     this.jsonAdapterFactory = new JsonAdapterAnnotationTypeAdapterFactory(constructorConstructor);
     factories.add(jsonAdapterFactory);
     factories.add(TypeAdapters.ENUM_FACTORY);

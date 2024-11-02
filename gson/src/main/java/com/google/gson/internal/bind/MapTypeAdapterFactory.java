@@ -115,11 +115,15 @@ import java.util.Map;
 public final class MapTypeAdapterFactory implements TypeAdapterFactory {
   private final ConstructorConstructor constructorConstructor;
   final boolean complexMapKeySerialization;
+  final boolean disallowDuplicateProperties;
 
   public MapTypeAdapterFactory(
-      ConstructorConstructor constructorConstructor, boolean complexMapKeySerialization) {
+      ConstructorConstructor constructorConstructor,
+      boolean complexMapKeySerialization,
+      boolean disallowDuplicateProperties) {
     this.constructorConstructor = constructorConstructor;
     this.complexMapKeySerialization = complexMapKeySerialization;
+    this.disallowDuplicateProperties = disallowDuplicateProperties;
   }
 
   @Override
@@ -186,7 +190,7 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
           K key = keyTypeAdapter.read(in);
           V value = valueTypeAdapter.read(in);
           V replaced = map.put(key, value);
-          if (replaced != null) {
+          if (disallowDuplicateProperties && replaced != null) {
             throw new JsonSyntaxException("duplicate key: " + key);
           }
           in.endArray();
@@ -199,7 +203,7 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
           K key = keyTypeAdapter.read(in);
           V value = valueTypeAdapter.read(in);
           V replaced = map.put(key, value);
-          if (replaced != null) {
+          if (disallowDuplicateProperties && replaced != null) {
             throw new JsonSyntaxException("duplicate key: " + key);
           }
         }
