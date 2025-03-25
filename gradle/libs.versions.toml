@@ -1,0 +1,6 @@
+[versions]
+mavenpublish = "0.28.0"
+
+[plugins]
+vanniktech-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenpublish" }
+shadow = { id = "com.gradleup.shadow", version = "8.3.5" }
