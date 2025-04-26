@@ -60,19 +60,22 @@ import java.util.Map;
 public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
   private final ConstructorConstructor constructorConstructor;
   private final FieldNamingStrategy fieldNamingPolicy;
-  private final Excluder excluder;
+    private final boolean continueOnUnknownFields;
+    private final Excluder excluder;
   private final JsonAdapterAnnotationTypeAdapterFactory jsonAdapterFactory;
   private final List<ReflectionAccessFilter> reflectionFilters;
 
   public ReflectiveTypeAdapterFactory(
-      ConstructorConstructor constructorConstructor,
-      FieldNamingStrategy fieldNamingPolicy,
-      Excluder excluder,
-      JsonAdapterAnnotationTypeAdapterFactory jsonAdapterFactory,
-      List<ReflectionAccessFilter> reflectionFilters) {
+          ConstructorConstructor constructorConstructor,
+          FieldNamingStrategy fieldNamingPolicy,
+          boolean continueOnUnknownFields,
+          Excluder excluder,
+          JsonAdapterAnnotationTypeAdapterFactory jsonAdapterFactory,
+          List<ReflectionAccessFilter> reflectionFilters) {
     this.constructorConstructor = constructorConstructor;
     this.fieldNamingPolicy = fieldNamingPolicy;
-    this.excluder = excluder;
+      this.continueOnUnknownFields = continueOnUnknownFields;
+      this.excluder = excluder;
     this.jsonAdapterFactory = jsonAdapterFactory;
     this.reflectionFilters = reflectionFilters;
   }
@@ -158,7 +161,7 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
 
     ObjectConstructor<T> constructor = constructorConstructor.get(type);
     return new FieldReflectionAdapter<>(
-        constructor, getBoundFields(gson, type, raw, blockInaccessible, false));
+        constructor, getBoundFields(gson, type, raw, blockInaccessible, false), gson.isContinueOnUnknownFields());
   }
 
   private static <M extends AccessibleObject & Member> void checkAccessible(
@@ -511,9 +514,20 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
           String name = in.nextName();
           BoundField field = deserializedFields.get(name);
           if (field == null) {
+            System.err.println("no such field found reflectively, ignoring data: '" + name + "'");
             in.skipValue();
           } else {
-            readField(accumulator, in, field);
+            try {
+              //System.out.printf("read %s%n", name);
+              readField(accumulator, in, field);
+            } catch (JsonParseException e) {
+              if (this instanceof FieldReflectionAdapter fieldReflectionAdapter && fieldReflectionAdapter.continueOnUnknownFields1) {
+                System.err.println("Skipping field '" + name + "' instead of throwing JsonException! " + e.getMessage());
+                e.printStackTrace();
+              } else {
+                throw e;
+              }
+            }
           }
         }
       } catch (IllegalStateException e) {
@@ -541,11 +555,13 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
 
   private static final class FieldReflectionAdapter<T> extends Adapter<T, T> {
     private final ObjectConstructor<T> constructor;
+      private final boolean continueOnUnknownFields1;
 
-    FieldReflectionAdapter(ObjectConstructor<T> constructor, FieldsData fieldsData) {
+      FieldReflectionAdapter(ObjectConstructor<T> constructor, FieldsData fieldsData, boolean continueOnUnknownFields) {
       super(fieldsData);
       this.constructor = constructor;
-    }
+          continueOnUnknownFields1 = continueOnUnknownFields;
+      }
 
     @Override
     T createAccumulator() {

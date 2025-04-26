@@ -159,6 +159,7 @@ public final class Gson {
   static final boolean DEFAULT_COMPLEX_MAP_KEYS = false;
   static final boolean DEFAULT_SPECIALIZE_FLOAT_VALUES = false;
   static final boolean DEFAULT_DISALLOW_DUPLICATE_PROPERTIES = false;
+  static final boolean DEFAULT_CONTINUE_ON_UNKNOWN_FIELDS = false;
   static final boolean DEFAULT_USE_JDK_UNSAFE = true;
   static final String DEFAULT_DATE_PATTERN = null;
   static final FieldNamingStrategy DEFAULT_FIELD_NAMING_STRATEGY = FieldNamingPolicy.IDENTITY;
@@ -197,6 +198,12 @@ public final class Gson {
   final boolean serializeNulls;
   final boolean complexMapKeySerialization;
   final boolean disallowDuplicateProperties;
+
+  public boolean isContinueOnUnknownFields() {
+    return continueOnUnknownFields;
+  }
+
+  final boolean continueOnUnknownFields;
   final boolean generateNonExecutableJson;
   final boolean htmlSafe;
   final FormattingStyle formattingStyle;
@@ -260,6 +267,7 @@ public final class Gson {
         DEFAULT_SERIALIZE_NULLS,
         DEFAULT_COMPLEX_MAP_KEYS,
         DEFAULT_DISALLOW_DUPLICATE_PROPERTIES,
+        DEFAULT_CONTINUE_ON_UNKNOWN_FIELDS,
         DEFAULT_JSON_NON_EXECUTABLE,
         DEFAULT_ESCAPE_HTML,
         DEFAULT_FORMATTING_STYLE,
@@ -285,6 +293,7 @@ public final class Gson {
       boolean serializeNulls,
       boolean complexMapKeySerialization,
       boolean disallowDuplicateProperties,
+      boolean continueOnUnknownFields,
       boolean generateNonExecutableGson,
       boolean htmlSafe,
       FormattingStyle formattingStyle,
@@ -309,6 +318,7 @@ public final class Gson {
     this.serializeNulls = serializeNulls;
     this.complexMapKeySerialization = complexMapKeySerialization;
     this.disallowDuplicateProperties = disallowDuplicateProperties;
+    this.continueOnUnknownFields = continueOnUnknownFields;
     this.generateNonExecutableJson = generateNonExecutableGson;
     this.htmlSafe = htmlSafe;
     this.formattingStyle = formattingStyle;
@@ -398,6 +408,7 @@ public final class Gson {
         new ReflectiveTypeAdapterFactory(
             constructorConstructor,
             fieldNamingStrategy,
+            continueOnUnknownFields,
             excluder,
             jsonAdapterFactory,
             reflectionFilters));

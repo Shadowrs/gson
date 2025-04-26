@@ -1,4 +1,4 @@
-rootProject.name = "gson"
+rootProject.name = "gson-dmm"
 
 include(
     "gson",

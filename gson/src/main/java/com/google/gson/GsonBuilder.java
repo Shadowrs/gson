@@ -17,6 +17,7 @@
 package com.google.gson;
 
 import static com.google.gson.Gson.DEFAULT_COMPLEX_MAP_KEYS;
+import static com.google.gson.Gson.DEFAULT_CONTINUE_ON_UNKNOWN_FIELDS;
 import static com.google.gson.Gson.DEFAULT_DATE_PATTERN;
 import static com.google.gson.Gson.DEFAULT_DISALLOW_DUPLICATE_PROPERTIES;
 import static com.google.gson.Gson.DEFAULT_ESCAPE_HTML;
@@ -107,6 +108,7 @@ public final class GsonBuilder {
   private int timeStyle = DateFormat.DEFAULT;
   private boolean complexMapKeySerialization = DEFAULT_COMPLEX_MAP_KEYS;
   private boolean disallowDuplicateProperties = DEFAULT_DISALLOW_DUPLICATE_PROPERTIES;
+  private boolean continueOnUnknownFields = DEFAULT_CONTINUE_ON_UNKNOWN_FIELDS;
   private boolean serializeSpecialFloatingPointValues = DEFAULT_SPECIALIZE_FLOAT_VALUES;
   private boolean escapeHtmlChars = DEFAULT_ESCAPE_HTML;
   private FormattingStyle formattingStyle = DEFAULT_FORMATTING_STYLE;
@@ -137,6 +139,7 @@ public final class GsonBuilder {
     this.serializeNulls = gson.serializeNulls;
     this.complexMapKeySerialization = gson.complexMapKeySerialization;
     this.disallowDuplicateProperties = gson.disallowDuplicateProperties;
+    this.continueOnUnknownFields = gson.continueOnUnknownFields;
     this.generateNonExecutableJson = gson.generateNonExecutableJson;
     this.escapeHtmlChars = gson.htmlSafe;
     this.formattingStyle = gson.formattingStyle;
@@ -889,6 +892,11 @@ public final class GsonBuilder {
     return this;
   }
 
+  public GsonBuilder setContinueOnUnknownFields(boolean continueOnUnknownFields) {
+    this.continueOnUnknownFields = continueOnUnknownFields;
+    return this;
+  }
+
   /**
    * Creates a {@link Gson} instance based on the current configuration. This method is free of
    * side-effects to this {@code GsonBuilder} instance and hence can be called multiple times.
@@ -914,6 +922,7 @@ public final class GsonBuilder {
         serializeNulls,
         complexMapKeySerialization,
         disallowDuplicateProperties,
+        continueOnUnknownFields,
         generateNonExecutableJson,
         escapeHtmlChars,
         formattingStyle,
