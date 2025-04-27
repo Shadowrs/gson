@@ -521,7 +521,10 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
               //System.out.printf("read %s%n", name);
               readField(accumulator, in, field);
             } catch (JsonParseException e) {
-              if (this instanceof FieldReflectionAdapter fieldReflectionAdapter && fieldReflectionAdapter.continueOnUnknownFields1) {
+              if (this instanceof FieldReflectionAdapter) {
+                FieldReflectionAdapter fieldReflectionAdapter = (FieldReflectionAdapter) this;
+                if (fieldReflectionAdapter.continueOnUnknownFields1) {
+}
                 System.err.println("Skipping field '" + name + "' instead of throwing JsonException! " + e.getMessage());
                 e.printStackTrace();
               } else {
