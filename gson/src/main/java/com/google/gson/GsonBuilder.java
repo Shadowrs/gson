@@ -37,6 +37,7 @@ import com.google.gson.annotations.Until;
 import com.google.gson.internal.$Gson$Preconditions;
 import com.google.gson.internal.Excluder;
 import com.google.gson.internal.bind.DefaultDateTypeAdapter;
+import com.google.gson.internal.bind.ReflectiveTypeAdapterFactory;
 import com.google.gson.internal.bind.TreeTypeAdapter;
 import com.google.gson.internal.bind.TypeAdapters;
 import com.google.gson.internal.sql.SqlTypesSupport;
@@ -938,7 +939,8 @@ public final class GsonBuilder {
         factories,
         objectToNumberStrategy,
         numberToNumberStrategy,
-        new ArrayList<>(reflectionFilters));
+        new ArrayList<>(reflectionFilters),
+            new ReflectiveTypeAdapterFactory.Adapter.JsonParseExceptionsFailSafeCache());
   }
 
   private static void addTypeAdaptersForDate(

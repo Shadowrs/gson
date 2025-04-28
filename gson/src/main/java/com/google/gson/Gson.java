@@ -195,14 +195,10 @@ public final class Gson {
   final Excluder excluder;
   final FieldNamingStrategy fieldNamingStrategy;
   final Map<Type, InstanceCreator<?>> instanceCreators;
-  final boolean serializeNulls;
+  final ReflectiveTypeAdapterFactory.Adapter.JsonParseExceptionsFailSafeCache failSafes;
+    final boolean serializeNulls;
   final boolean complexMapKeySerialization;
   final boolean disallowDuplicateProperties;
-
-  public boolean isContinueOnUnknownFields() {
-    return continueOnUnknownFields;
-  }
-
   final boolean continueOnUnknownFields;
   final boolean generateNonExecutableJson;
   final boolean htmlSafe;
@@ -283,7 +279,9 @@ public final class Gson {
         Collections.<TypeAdapterFactory>emptyList(),
         DEFAULT_OBJECT_TO_NUMBER_STRATEGY,
         DEFAULT_NUMBER_TO_NUMBER_STRATEGY,
-        Collections.<ReflectionAccessFilter>emptyList());
+        Collections.<ReflectionAccessFilter>emptyList(),
+            new ReflectiveTypeAdapterFactory.Adapter.JsonParseExceptionsFailSafeCache()
+    );
   }
 
   Gson(
@@ -309,11 +307,14 @@ public final class Gson {
       List<TypeAdapterFactory> factoriesToBeAdded,
       ToNumberStrategy objectToNumberStrategy,
       ToNumberStrategy numberToNumberStrategy,
-      List<ReflectionAccessFilter> reflectionFilters) {
+      List<ReflectionAccessFilter> reflectionFilters,
+      ReflectiveTypeAdapterFactory.Adapter.JsonParseExceptionsFailSafeCache failSafes
+  ) {
     this.excluder = excluder;
     this.fieldNamingStrategy = fieldNamingStrategy;
     this.instanceCreators = instanceCreators;
-    this.constructorConstructor =
+      this.failSafes = failSafes;
+      this.constructorConstructor =
         new ConstructorConstructor(instanceCreators, useJdkUnsafe, reflectionFilters);
     this.serializeNulls = serializeNulls;
     this.complexMapKeySerialization = complexMapKeySerialization;
@@ -427,6 +428,14 @@ public final class Gson {
     return new GsonBuilder(this);
   }
 
+
+  public boolean isContinueOnUnknownFields() {
+    return continueOnUnknownFields;
+  }
+
+  public ReflectiveTypeAdapterFactory.Adapter.JsonParseExceptionsFailSafeCache getFailSafes() {
+    return failSafes;
+  }
   /**
    * @deprecated This method by accident exposes an internal Gson class; it might be removed in a
    *     future version.

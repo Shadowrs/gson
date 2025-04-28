@@ -55,7 +55,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /** Type adapter that reflects over the fields and methods of a class. */
 public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
@@ -162,7 +161,7 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
 
     ObjectConstructor<T> constructor = constructorConstructor.get(type);
     return new FieldReflectionAdapter<>(
-        constructor, getBoundFields(gson, type, raw, blockInaccessible, false), gson.isContinueOnUnknownFields());
+        constructor, getBoundFields(gson, type, raw, blockInaccessible, false), gson);
   }
 
   private static <M extends AccessibleObject & Member> void checkAccessible(
@@ -524,12 +523,8 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
             } catch (JsonParseException e) {
               if (this instanceof FieldReflectionAdapter) {
                 FieldReflectionAdapter fieldReflectionAdapter = (FieldReflectionAdapter) this;
-                if (fieldReflectionAdapter.continueOnUnknownFields1) {
-                  if (failSafeJsonExceptionListener != null) {
-                    failSafeJsonExceptionListener.accept(new JsonParseExceptionFailSafe("Skipping field '" + name + "' instead of throwing JsonException! " + e.getMessage(), e));
-                  } else {
-                    System.err.println("Gson: Missing failSafeJsonExceptionListener - add it yourself.");
-                  }
+                if (fieldReflectionAdapter.gson.isContinueOnUnknownFields()) {
+                  fieldReflectionAdapter.gson.getFailSafes().exceptions.add(new JsonParseExceptionFailSafe("Skipping field '" + name + "' instead of throwing JsonException! " + e.getMessage(), e));
                 } else {
                   throw e;
                 }
@@ -555,7 +550,12 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
       }
     }
 
-    public static Consumer<JsonParseExceptionFailSafe> failSafeJsonExceptionListener; // USER PROVIDED
+    /**
+     * USER PROVIDED
+     */
+    public static final class JsonParseExceptionsFailSafeCache {
+      public List<JsonParseExceptionFailSafe> exceptions = new ArrayList<>();
+    }
 
     /** Create the Object that will be used to collect each field value */
     abstract A createAccumulator();
@@ -573,12 +573,12 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
 
   private static final class FieldReflectionAdapter<T> extends Adapter<T, T> {
     private final ObjectConstructor<T> constructor;
-      private final boolean continueOnUnknownFields1;
+      public final Gson gson;
 
-      FieldReflectionAdapter(ObjectConstructor<T> constructor, FieldsData fieldsData, boolean continueOnUnknownFields) {
+      FieldReflectionAdapter(ObjectConstructor<T> constructor, FieldsData fieldsData, Gson gson) {
       super(fieldsData);
       this.constructor = constructor;
-          continueOnUnknownFields1 = continueOnUnknownFields;
+      this.gson = gson;
       }
 
     @Override
