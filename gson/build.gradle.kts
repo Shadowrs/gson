@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.google.code.gson"
-version = "2.11.0-dmm-1.0.1"
+version = "2.11.0-dmm-1.0.3"
 
 repositories {
     mavenCentral()

@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /** Type adapter that reflects over the fields and methods of a class. */
 public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
@@ -524,9 +525,14 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
               if (this instanceof FieldReflectionAdapter) {
                 FieldReflectionAdapter fieldReflectionAdapter = (FieldReflectionAdapter) this;
                 if (fieldReflectionAdapter.continueOnUnknownFields1) {
-}
-                System.err.println("Skipping field '" + name + "' instead of throwing JsonException! " + e.getMessage());
-                e.printStackTrace();
+                  if (failSafeJsonExceptionListener != null) {
+                    failSafeJsonExceptionListener.accept(new JsonParseExceptionFailSafe("Skipping field '" + name + "' instead of throwing JsonException! " + e.getMessage(), e));
+                  } else {
+                    System.err.println("Gson: Missing failSafeJsonExceptionListener - add it yourself.");
+                  }
+                } else {
+                  throw e;
+                }
               } else {
                 throw e;
               }
@@ -541,6 +547,15 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
       in.endObject();
       return finalize(accumulator);
     }
+
+    public static final class JsonParseExceptionFailSafe extends Exception {
+
+      public JsonParseExceptionFailSafe(String message, Throwable cause) {
+        super(message, cause);
+      }
+    }
+
+    public static Consumer<JsonParseExceptionFailSafe> failSafeJsonExceptionListener; // USER PROVIDED
 
     /** Create the Object that will be used to collect each field value */
     abstract A createAccumulator();
