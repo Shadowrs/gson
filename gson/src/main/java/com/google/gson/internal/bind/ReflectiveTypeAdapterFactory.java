@@ -514,7 +514,10 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
           String name = in.nextName();
           BoundField field = deserializedFields.get(name);
           if (field == null) {
-            System.err.println("no such field found reflectively, ignoring data: '" + name + "'");
+            if (this instanceof FieldReflectionAdapter) {
+              FieldReflectionAdapter fieldReflectionAdapter = (FieldReflectionAdapter) this;
+              fieldReflectionAdapter.gson.getFailSafes().exceptions.add(new JsonParseException("no such field found reflectively, ignoring data: '" + name + "'"));
+            }
             in.skipValue();
           } else {
             try {
@@ -554,7 +557,7 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
      * USER PROVIDED
      */
     public static final class JsonParseExceptionsFailSafeCache {
-      public List<JsonParseExceptionFailSafe> exceptions = new ArrayList<>();
+      public List<Exception> exceptions = new ArrayList<>();
     }
 
     /** Create the Object that will be used to collect each field value */
